@@ -1,8 +1,11 @@
 package com.codepath.apps.restclienttemplate
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -21,8 +24,6 @@ class TimelineActivity : AppCompatActivity() {
     lateinit var adapter: TweetsAdapter
 
     lateinit var swipeContainer: SwipeRefreshLayout
-
-    lateinit var scrollListener: EndlessRecyclerViewScrollListener
 
     val tweets = ArrayList<Tweet>()
 
@@ -55,6 +56,39 @@ class TimelineActivity : AppCompatActivity() {
 
         // populates the home timeline
         populateHomeTimeline()
+    }
+
+    // Displays the menu
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    // Handles clicks on menu items
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.compose) {
+            // Navigate to compose screen
+            val intent = Intent(this, ComposeActivity::class.java)
+            startActivityForResult(intent, REQUEST_CODE)
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    // Handles when tweet comes back
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        // REQUEST_CODE is defined above
+        if (resultCode == RESULT_OK && resultCode == REQUEST_CODE) {
+            // Get data from out tweet
+            val tweet = data?.getParcelableExtra("tweet") as Tweet
+
+            // Update timeline modifying source of tweets
+            tweets.add(0, tweet)
+
+            // Update adapter
+            adapter.notifyItemInserted(0)
+            rvTweets.smoothScrollToPosition(0)
+        }
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     // populates the home timeline
@@ -91,6 +125,7 @@ class TimelineActivity : AppCompatActivity() {
     }
     companion object {
         val TAG = "TimelineActivity"
+        val REQUEST_CODE = 10
     }
 
 
